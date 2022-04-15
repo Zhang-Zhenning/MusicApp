@@ -19,6 +19,8 @@ class Reference{
     public static int musicNum = 0;
     public static int refreshFlag = 1;
 
+    //ok
+
 }
 
 
