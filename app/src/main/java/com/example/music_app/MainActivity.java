@@ -118,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     textViewPlayer.setText(Reference.playerList.get(i));
                     textViewMusicName.setText(Reference.musicList.get(i));
                     textViewDuration.setText(Reference.durationList.get(i));
+                    //ok
                 }
             }
 
