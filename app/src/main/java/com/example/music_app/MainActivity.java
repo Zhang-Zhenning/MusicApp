@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
         Reference.playerList.add(singer);
         Reference.musicNum += 1;
 
+        // ok
+
     }
 
 
