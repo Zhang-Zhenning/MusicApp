@@ -17,10 +17,13 @@ import java.util.ArrayList;
 class Reference_MusicPlayer{
     public static int stopOrPlay = 1;
     public static int currentPlayMusic = 0;
+//    public static MediaPlayer cur_mp;
 }
 
 public class MusicPlayerActivity extends AppCompatActivity{
 
+    MediaPlayer cur_mp;
+    AudioManager cur_am;
     MediaPlayer mp1;
     MediaPlayer mp2;
     MediaPlayer mp3;
@@ -55,6 +58,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
         }
 
         // setup music player
+
         mp1 = MediaPlayer.create(this,R.raw.hello);
         mp2 = MediaPlayer.create(this,R.raw.wind);
         mp3 = MediaPlayer.create(this,R.raw.storm);
@@ -76,13 +80,19 @@ public class MusicPlayerActivity extends AppCompatActivity{
 
         if(Reference_MusicPlayer.currentPlayMusic == 0){
             progressControl.setMax(mp1.getDuration());
+            cur_mp = mp1;
+            cur_am = am1;
         }
         else if(Reference_MusicPlayer.currentPlayMusic == 1){
             progressControl.setMax(mp2.getDuration());
+            cur_mp = mp2;
+            cur_am = am2;
 
         }
         else if(Reference_MusicPlayer.currentPlayMusic == 2){
             progressControl.setMax(mp3.getDuration());
+            cur_mp = mp3;
+            cur_am = am3;
         }
 
         // setup listener
@@ -90,14 +100,17 @@ public class MusicPlayerActivity extends AppCompatActivity{
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if(Reference_MusicPlayer.currentPlayMusic == 0){
-                    am1.setStreamVolume(AudioManager.STREAM_MUSIC,i,0);
+                    cur_am = am1;
+                    cur_am.setStreamVolume(AudioManager.STREAM_MUSIC,i,0);
                 }
                 else if(Reference_MusicPlayer.currentPlayMusic == 1){
-                    am2.setStreamVolume(AudioManager.STREAM_MUSIC,i,0);
+                    cur_am = am2;
+                    cur_am.setStreamVolume(AudioManager.STREAM_MUSIC,i,0);
 
                 }
                 else if(Reference_MusicPlayer.currentPlayMusic == 2){
-                    am3.setStreamVolume(AudioManager.STREAM_MUSIC,i,0);
+                    cur_am = am3;
+                    cur_am.setStreamVolume(AudioManager.STREAM_MUSIC,i,0);
                 }
             }
 
@@ -116,12 +129,15 @@ public class MusicPlayerActivity extends AppCompatActivity{
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
                 if(Reference_MusicPlayer.currentPlayMusic == 0){
+                    progressControl.setMax(mp1.getDuration());
                     mp1.seekTo(i);
                 }
                 else if(Reference_MusicPlayer.currentPlayMusic == 1){
+                    progressControl.setMax(mp2.getDuration());
                     mp2.seekTo(i);
                 }
                 else if(Reference_MusicPlayer.currentPlayMusic == 2){
+                    progressControl.setMax(mp3.getDuration());
                     mp3.seekTo(i);
                 }
             }
@@ -160,12 +176,182 @@ public class MusicPlayerActivity extends AppCompatActivity{
         finish();
     }
 
+    public void click_next(View view){
+                int previous_music = Reference_MusicPlayer.currentPlayMusic;
+                Reference_MusicPlayer.currentPlayMusic = (Reference_MusicPlayer.currentPlayMusic + 1) % 3;
+                // reset picture
+                ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
+                if(Reference_MusicPlayer.currentPlayMusic == 0){
+                    imageViewMain1.setImageResource(R.drawable.leave);
+                    SeekBar progressControl1 = (SeekBar) findViewById(R.id.seekBarProgress);
+                    progressControl1.setMax(mp1.getDuration());
+
+                }
+                else if(Reference_MusicPlayer.currentPlayMusic == 1){
+                    imageViewMain1.setImageResource(R.drawable.wind);
+                    SeekBar progressControl1 = (SeekBar) findViewById(R.id.seekBarProgress);
+                    progressControl1.setMax(mp2.getDuration());
+
+                }
+                else if(Reference_MusicPlayer.currentPlayMusic == 2){
+                    imageViewMain1.setImageResource(R.drawable.storm);
+                    SeekBar progressControl1 = (SeekBar) findViewById(R.id.seekBarProgress);
+                    progressControl1.setMax(mp3.getDuration());
+                }
+
+                if(Reference_MusicPlayer.stopOrPlay == 0){
+                    // now it is playing
+                    if(previous_music == 0){
+
+                        mp1.pause();
+                        mp1.seekTo(0);
+
+                    }
+                    else if(previous_music == 1){
+
+                        mp2.pause();
+                        mp2.seekTo(0);
+
+                    }
+                    else if(previous_music == 2){
+
+                        mp3.pause();
+                        mp3.seekTo(0);
+
+                    }
+
+                    // start new music
+                    if(Reference_MusicPlayer.currentPlayMusic == 0){
+                        mp1.start();
+                    }
+                    else if(Reference_MusicPlayer.currentPlayMusic == 1){
+                        mp2.start();
+
+                    }
+                    else if(Reference_MusicPlayer.currentPlayMusic == 2){
+                        mp3.start();
+                    }
+
+                }
+                else{
+                    // it is not playing
+                    if(previous_music == 0){
+
+//                        mp1.pause();
+                        mp1.seekTo(0);
+
+                    }
+                    else if(previous_music == 1){
+
+//                        mp2.pause();
+                        mp2.seekTo(0);
+
+                    }
+                    else if(previous_music == 2){
+
+//                        mp3.pause();
+                        mp3.seekTo(0);
+
+                    }
+
+                }
+
+
+    }
+
+    public void click_previous(View view){
+        int previous_music = Reference_MusicPlayer.currentPlayMusic;
+//        Reference_MusicPlayer.currentPlayMusic = (Reference_MusicPlayer.currentPlayMusic - 1) % 3;
+        if(Reference_MusicPlayer.currentPlayMusic == 0){
+            Reference_MusicPlayer.currentPlayMusic = 2;
+        }
+        else if(Reference_MusicPlayer.currentPlayMusic == 1){
+            Reference_MusicPlayer.currentPlayMusic = 0;
+
+        }
+        else if(Reference_MusicPlayer.currentPlayMusic == 2){
+            Reference_MusicPlayer.currentPlayMusic = 1;
+        }
+        // reset picture
+        ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
+        if(Reference_MusicPlayer.currentPlayMusic == 0){
+            imageViewMain1.setImageResource(R.drawable.leave);
+        }
+        else if(Reference_MusicPlayer.currentPlayMusic == 1){
+            imageViewMain1.setImageResource(R.drawable.wind);
+
+        }
+        else if(Reference_MusicPlayer.currentPlayMusic == 2){
+            imageViewMain1.setImageResource(R.drawable.storm);
+        }
+
+        if(Reference_MusicPlayer.stopOrPlay == 0){
+            // now it is playing
+            if(previous_music == 0){
+
+                mp1.pause();
+                mp1.seekTo(0);
+
+            }
+            else if(previous_music == 1){
+
+                mp2.pause();
+                mp2.seekTo(0);
+
+            }
+            else if(previous_music == 2){
+
+                mp3.pause();
+                mp3.seekTo(0);
+
+            }
+
+            // start new music
+            if(Reference_MusicPlayer.currentPlayMusic == 0){
+                mp1.start();
+            }
+            else if(Reference_MusicPlayer.currentPlayMusic == 1){
+                mp2.start();
+
+            }
+            else if(Reference_MusicPlayer.currentPlayMusic == 2){
+                mp3.start();
+            }
+
+        }
+        else{
+            // it is not playing
+            if(previous_music == 0){
+
+//                        mp1.pause();
+                mp1.seekTo(0);
+
+            }
+            else if(previous_music == 1){
+
+//                        mp2.pause();
+                mp2.seekTo(0);
+
+            }
+            else if(previous_music == 2){
+
+//                        mp3.pause();
+                mp3.seekTo(0);
+
+            }
+
+        }
+
+
+    }
+
     public void click_PlayStop(View view){
         if(Reference_MusicPlayer.stopOrPlay == 1){
             Reference_MusicPlayer.stopOrPlay = 0;
             ImageView a = (ImageView) view;
             a.setImageResource(R.drawable.stop);
             Log.i("Info","in first if");
+//            cur_mp.start();
             if(Reference_MusicPlayer.currentPlayMusic == 0){
                 mp1.start();
             }
@@ -182,6 +368,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
             ImageView a = (ImageView) view;
             a.setImageResource(R.drawable.play);
             Log.i("Info","in second if");
+//            cur_mp.pause();
             if(Reference_MusicPlayer.currentPlayMusic == 0){
                 mp1.pause();
             }
