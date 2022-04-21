@@ -19,14 +19,7 @@ import java.util.ArrayList;
 
 public class MusicPlayerActivity extends AppCompatActivity{
 
-    MediaPlayer cur_mp;
     AudioManager cur_am;
-    MediaPlayer mp1;
-    MediaPlayer mp2;
-    MediaPlayer mp3;
-    AudioManager am1;
-    AudioManager am2;
-    AudioManager am3;
 
 
     // when we enter this page for the first time, need to initialize it firstly
@@ -120,6 +113,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
     public void click_return(View view){
         finish();
     }
+
 
     public void click_next(View view){
                 int previous_music = Reference.currentPlayMusic;

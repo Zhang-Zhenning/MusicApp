@@ -3,14 +3,25 @@ package com.example.music_app;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.renderscript.ScriptGroup;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.*;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 
@@ -37,7 +48,52 @@ class Reference{
 
 public class MainActivity extends AppCompatActivity {
 
+    // for downloading from internet
+    public class DownloadTask extends AsyncTask<String,Void,String>{
+        @Override
+        protected String doInBackground(String... strings){
+            Log.i("URL",strings[0]);
+            String result_in = "";
+            URL url = null;
+            HttpURLConnection urlConnection = null;
+
+            try {
+                url = new URL(strings[0]);
+
+                try {
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                }
+                 catch (IOException e) {
+                    e.printStackTrace();
+                    return "Failed";
+                }
+
+
+                InputStream inputS = urlConnection.getInputStream();
+                InputStreamReader reader = new InputStreamReader(inputS);
+                int data = reader.read();
+
+                while(data != -1){
+                    char current = (char) data;
+                    result_in += (current);
+                    data = reader.read();
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return "Failed";
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            Log.i("Result",result_in);
+            return result_in;
+        }
+    }
+
     // --------------------------------------------------tool functions----------------------------------------------------
+
+
 
     // set image and three textview in the main page
     public void setMusicInfo_to_mainPage(String musicName,String musicPlayer,String musicDuration,int musicImageId){
@@ -68,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
         MediaPlayer curMp = MediaPlayer.create(this,R.raw.hello);
         addMusic_to_refer("Luv Letter","ZZN","16:06",R.drawable.leave1,R.raw.hello,curMp);
         MediaPlayer curMp1 = MediaPlayer.create(this,R.raw.wind);
-        addMusic_to_refer("Wind Song","LYC","00:09",R.drawable.wind1,R.raw.wind,curMp1);
+        addMusic_to_refer("Wind Song","XPY","00:09",R.drawable.wind1,R.raw.wind,curMp1);
         MediaPlayer curMp2 = MediaPlayer.create(this,R.raw.storm);
         addMusic_to_refer("Storm Song","ZLH","00:12",R.drawable.storm2,R.raw.storm,curMp2);
 
@@ -78,6 +134,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // download thread
+        DownloadTask downloadTask = new DownloadTask();
+
+        try{
+            String result = downloadTask.execute("http://tonghanghang.org/").get();
+            Log.i("Result",result);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
 
         // ------------------------------------------------------Initialize MainPage------------------------------------------------------
         ListView myListView1 = findViewById(R.id.ListView1);
@@ -142,4 +209,42 @@ public class MainActivity extends AppCompatActivity {
         });
 
     }
+
+    public void click_image(View view){
+        Log.i("Info","In clickImage");
+        ImageView my_image = (ImageView) findViewById(R.id.imageViewInfo);
+        ImageDownloader task = new ImageDownloader();
+        try {
+            Bitmap myImage = task.execute("https://static.wikia.nocookie.net/simpsons/images/6/65/Bart_Simpson.png/revision/latest/scale-to-width-down/250?cb=20190409004756").get();
+            my_image.setImageBitmap(myImage);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public class ImageDownloader extends AsyncTask<String,Void,Bitmap>{
+        @Override
+        protected Bitmap doInBackground(String... urls){
+            try {
+                URL url = new URL(urls[0]);
+                try{
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.connect();
+                    InputStream in = connection.getInputStream();
+                    return BitmapFactory.decodeStream(in);
+
+                }catch(IOException e){
+                    e.printStackTrace();
+                    return null;
+                }
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+                return null;
+            }
+
+
+
+        }
+    }
+
 }
