@@ -36,6 +36,8 @@ public class MusicPlayerActivity extends AppCompatActivity{
         // music poster image initialization
         ImageView imageViewMain = findViewById(R.id.imageViewMusicPoster);
         imageViewMain.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
+        TextView title = findViewById(R.id.textViewTitle);
+        title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
     }
 
     @Override
@@ -118,9 +120,12 @@ public class MusicPlayerActivity extends AppCompatActivity{
     public void click_next(View view){
                 int previous_music = Reference.currentPlayMusic;
                 Reference.currentPlayMusic = (Reference.currentPlayMusic + 1) % Reference.musicNum;
+
                 // reset picture
                 ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
                 imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
+                TextView title = findViewById(R.id.textViewTitle);
+                title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
                 SeekBar progressControlBar1 = (SeekBar) findViewById(R.id.seekBarProgress);
                 progressControlBar1.setMax(Reference.mpList.get(Reference.currentPlayMusic).getDuration());
 
@@ -155,6 +160,8 @@ public class MusicPlayerActivity extends AppCompatActivity{
         // reset picture
         ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
         imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
+        TextView title = findViewById(R.id.textViewTitle);
+        title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
         SeekBar progressControlBar1 = (SeekBar) findViewById(R.id.seekBarProgress);
         progressControlBar1.setMax(Reference.mpList.get(Reference.currentPlayMusic).getDuration());
 
