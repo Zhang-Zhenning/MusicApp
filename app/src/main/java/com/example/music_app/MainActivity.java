@@ -30,6 +30,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 // global variable class
@@ -59,6 +61,11 @@ public class MainActivity extends AppCompatActivity {
     String receivedMusicList;
     String [] processedMusicList;
     ArrayAdapter<String> musicAdaptor;
+    String musicListURL = "http://ec2-54-65-141-177.ap-northeast-1.compute.amazonaws.com:8080/music-repo/musics/";
+
+    // the recommend music list from last time!
+    ArrayList<String> lastNames = new ArrayList<String>();
+    ArrayList<String> lastSingers = new ArrayList<String>();
 
     // for downloading from internet
     public class DownloadTask extends AsyncTask<String,Void,String>{
@@ -151,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
                         MediaPlayer player = new MediaPlayer();
                         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                         player.setDataSource("http://ec2-54-65-141-177.ap-northeast-1.compute.amazonaws.com:8080/music-repo/musics/spyFamily.mp3");
-                        player.prepare();
+                        player.prepareAsync();
                         addMusic_to_refer_noName("SpyFamily", "LYC", String.valueOf(player.getDuration()), R.drawable.arnya, R.raw.bird, player);
                         addItemToListView("SpyFamily");
                         break;
@@ -218,12 +225,21 @@ public class MainActivity extends AppCompatActivity {
         DownloadTask downloadTask = new DownloadTask();
 
 
-        try{
-            String result = downloadTask.execute("http://tonghanghang.org/").get();
-            Log.i("Result",result);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+//        try{
+//            String result = downloadTask.execute("http://tonghanghang.org/").get();
+//            Log.i("Result",result);
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Log.i("test","timer");
+                new downloadMusicList().execute(musicListURL);
+
+            }
+        },0,300);
 
 
         // ------------------------------------------------------Initialize MainPage------------------------------------------------------
@@ -245,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
         // default mainPage image
         int m = R.drawable.bluetoe;
         imageViewInfo.setImageResource(m);
+
 
         // ------------------------------------------------------Initialize MusicBase-----------------------------------------------------
         initialize_musicBase();
@@ -451,6 +468,126 @@ public class MainActivity extends AppCompatActivity {
                 processedMusicList = new String[] {"a","b","c"};
 
                 parseReceivedMusicList();
+
+                return buffer.toString();
+
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+
+    }
+
+    // down load a json
+    private class downloadMusicList extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+
+
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+
+                InputStream stream = connection.getInputStream();
+
+                reader = new BufferedReader(new InputStreamReader(stream));
+
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line+"\n");
+                    Log.d("Response: ", "> " + line);   //here u ll get whole response...... :-)
+
+                }
+
+                String rawData = buffer.toString();
+                rawData = rawData.substring(1,rawData.length()-2);
+                String interval = ",";
+                String[] splitData = rawData.split(interval);
+
+                ArrayList<String> tempNames = new ArrayList<String>();
+                ArrayList<String> tempSingers = new ArrayList<String>();
+                ArrayList<MediaPlayer> tempMpList = new ArrayList<MediaPlayer>();
+
+                ArrayList<String> newLastNames = new ArrayList<String>();
+                ArrayList<String> newLastSingers = new ArrayList<String>();
+
+                // parse the music list
+                for (String s : splitData){
+//                    Log.i("jsonTest",s.substring(1,7));
+
+                    if(s.substring(2,6).equals("name") ){
+                        tempNames.add(s.substring(9,s.length()-1-4));
+//                        Log.i("test",s.substring(9,s.length()-1));
+                    }
+                    else if(s.substring(1,7).equals("author")){
+                        tempSingers.add(s.substring(10,s.length()-2));
+//                        Log.i("test",s.substring(10,s.length()-2));
+                    }
+                }
+
+                int flag = 0;
+//
+                // download the music
+                for(int i = 0; i < tempNames.size();i++){
+                    try {
+
+                        if(lastNames.contains(tempNames.get(i)) && lastSingers.contains(tempSingers.get(i))){
+                            continue;
+                        }
+
+                        flag = 1;
+                        newLastNames.add(tempNames.get(i));
+                        newLastSingers.add(tempSingers.get(i));
+
+                        MediaPlayer player = new MediaPlayer();
+                        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                        player.setDataSource(musicListURL+tempNames.get(i)+".WAV");
+                        Log.i("NewMusic",musicListURL+tempNames.get(i)+".WAV");
+                        player.prepare();
+//                        player.start();
+                        addMusic_to_refer_noName(tempNames.get(i), tempSingers.get(i), String.valueOf(player.getDuration()), R.drawable.arnya, R.raw.bird, player);
+                        addItemToListView(tempNames.get(i));
+
+//                        player.start();
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+
+                    }
+                }
+
+                if (flag == 0){
+                    return buffer.toString();
+                }
+
+                lastSingers = newLastSingers;
+                lastNames = newLastNames;
+
 
                 return buffer.toString();
 
