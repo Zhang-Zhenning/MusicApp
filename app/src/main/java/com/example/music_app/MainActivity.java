@@ -1,21 +1,33 @@
 package com.example.music_app;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.music_app.marqueueText;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.fonts.Font;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.renderscript.ScriptGroup;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.*;
 
 import java.io.BufferedReader;
@@ -26,10 +38,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -43,6 +57,8 @@ class Reference{
     public static int refreshFlag = 1;
     public static MediaPlayer cur_mp;
     public static AudioManager cur_am;
+    public static int heartModeOn = 0;
+    public static int heartModeFinish = 1;
 
     // global list variable
     public static final ArrayList<String> musicNameList = new ArrayList<String>();
@@ -53,6 +69,10 @@ class Reference{
     public static ArrayList<Integer> imageIdList = new ArrayList<Integer>();
 
 }
+
+
+
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -148,7 +168,19 @@ public class MainActivity extends AppCompatActivity {
         Reference.musicNum += 1;
     }
 
-    // get a new music list from server and try to add them into local music base
+    public String finetuneDuration(int miliDuration){
+        int secDuration = miliDuration / 1000;
+        int min = secDuration / 60;
+        int sec = secDuration % 60;
+
+        String secStr = String.valueOf(sec);
+        if (secStr.length() == 1){
+            secStr = secStr + "0";
+        }
+        return String.valueOf(min) + ":" + secStr;
+    }
+
+    // meaningless now
     public void parseReceivedMusicList(){
         for(String s: processedMusicList){
             Log.i("hahaha",s);
@@ -159,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
                         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
                         player.setDataSource("http://ec2-54-65-141-177.ap-northeast-1.compute.amazonaws.com:8080/music-repo/musics/spyFamily.mp3");
                         player.prepareAsync();
-                        addMusic_to_refer_noName("SpyFamily", "LYC", String.valueOf(player.getDuration()), R.drawable.arnya, R.raw.bird, player);
+                        addMusic_to_refer_noName("SpyFamily", "LYC", finetuneDuration(player.getDuration()), R.drawable.arnya, R.raw.bird, player);
                         addItemToListView("SpyFamily");
                         break;
 //                        player.start();
@@ -172,13 +204,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 case "b": {
                     MediaPlayer curMp = MediaPlayer.create(this, R.raw.danger);
-                    addMusic_to_refer_noName(s, "LYC", String.valueOf(curMp.getDuration()), R.drawable.wind1, R.raw.danger, curMp);
+                    addMusic_to_refer_noName(s, "LYC", finetuneDuration(curMp.getDuration()), R.drawable.wind1, R.raw.danger, curMp);
                     addItemToListView(s);
                     break;
                 }
                 case "c": {
                     MediaPlayer curMp = MediaPlayer.create(this, R.raw.soft);
-                    addMusic_to_refer_noName(s, "LYC", String.valueOf(curMp.getDuration()), R.drawable.storm2, R.raw.soft, curMp);
+                    addMusic_to_refer_noName(s, "LYC", finetuneDuration(curMp.getDuration()), R.drawable.storm2, R.raw.soft, curMp);
                     addItemToListView(s);
 
                     break;
@@ -225,6 +257,8 @@ public class MainActivity extends AppCompatActivity {
         DownloadTask downloadTask = new DownloadTask();
 
 
+
+
 //        try{
 //            String result = downloadTask.execute("http://tonghanghang.org/").get();
 //            Log.i("Result",result);
@@ -245,9 +279,9 @@ public class MainActivity extends AppCompatActivity {
         // ------------------------------------------------------Initialize MainPage------------------------------------------------------
         ListView myListView1 = findViewById(R.id.ListView1);
         ImageView imageViewInfo = (ImageView) findViewById(R.id.imageViewInfo);
-        TextView textViewMusicName = findViewById(R.id.textViewMusicName);
-        TextView textViewDuration = findViewById(R.id.textViewDuration);
-        TextView textViewPlayer = findViewById(R.id.textViewMusicPlayer);
+        marqueueText textViewMusicName = findViewById(R.id.textViewMusicName);
+        marqueueText textViewDuration = findViewById(R.id.textViewDuration);
+        marqueueText textViewPlayer = findViewById(R.id.textViewMusicPlayer);
 
         // default mainPage text
         String default_musicName = "MusicName";
@@ -265,7 +299,33 @@ public class MainActivity extends AppCompatActivity {
 
         // ------------------------------------------------------Initialize MusicBase-----------------------------------------------------
         initialize_musicBase();
-        musicAdaptor = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_single_choice,Reference.musicNameList);
+        // customized arrayadapter
+        musicAdaptor = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_single_choice,Reference.musicNameList){
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent){
+                // Cast the list view each item as text view
+                TextView item = (TextView) super.getView(position,convertView,parent);
+
+                // Set the typeface/font for the current item
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    Typeface typeface = getResources().getFont(R.font.newyear);
+                    item.setTypeface(typeface);
+
+                    // Set the list view item's text color
+
+
+                    // Change the item text size
+                    item.setTextSize(TypedValue.COMPLEX_UNIT_DIP,21);
+                }
+
+
+                // return the view
+                return item;
+            }
+        };
+
+
         // setup ListView
         myListView1.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         myListView1.setAdapter(musicAdaptor);
@@ -308,22 +368,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void click_image(View view){
-        Log.i("Info","In clickImage");
-        ImageView my_image = (ImageView) findViewById(R.id.imageViewInfo);
-        ImageDownloader task = new ImageDownloader();
-        try {
-            Bitmap myImage = task.execute("https://static.wikia.nocookie.net/simpsons/images/6/65/Bart_Simpson.png/revision/latest/scale-to-width-down/250?cb=20190409004756").get();
-//            my_image.setImageBitmap(myImage);
-        }catch(Exception e){
-            e.printStackTrace();
+
+        if(Reference.heartModeOn == 1) {
+            Reference.heartModeOn = 0;
+            Button t = findViewById(R.id.buttonDownload);
+            t.setBackgroundColor(getResources().getColor(R.color.teal_200));
+        }
+        else {
+            Reference.heartModeOn = 1;
+            Button t = findViewById(R.id.buttonDownload);
+            t.setBackgroundColor(getResources().getColor(R.color.purple_200));
         }
 
-
-        // try to upload music online
-//        new uploadMusic().execute();
-        // try to download json online
-        JsonTask j = new JsonTask();
-        j.execute("http://ec2-54-65-141-177.ap-northeast-1.compute.amazonaws.com:8080/music-repo/users");
+//        Log.i("Info","In clickImage");
+//        ImageView my_image = (ImageView) findViewById(R.id.imageViewInfo);
+//        ImageDownloader task = new ImageDownloader();
+//        try {
+//            Bitmap myImage = task.execute("https://static.wikia.nocookie.net/simpsons/images/6/65/Bart_Simpson.png/revision/latest/scale-to-width-down/250?cb=20190409004756").get();
+////            my_image.setImageBitmap(myImage);
+//        }catch(Exception e){
+//            e.printStackTrace();
+//        }
+//
+//
+//        // try to upload music online
+////        new uploadMusic().execute();
+//        // try to download json online
+//        JsonTask j = new JsonTask();
+//        j.execute("http://ec2-54-65-141-177.ap-northeast-1.compute.amazonaws.com:8080/music-repo/users");
 
     }
 
@@ -501,6 +573,9 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
 
+            if(Reference.heartModeOn == 0 || Reference.heartModeFinish == 0) return "Skip";
+
+            Reference.heartModeFinish = 0;
 
             HttpURLConnection connection = null;
             BufferedReader reader = null;
@@ -570,7 +645,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i("NewMusic",musicListURL+tempNames.get(i)+".WAV");
                         player.prepare();
 //                        player.start();
-                        addMusic_to_refer_noName(tempNames.get(i), tempSingers.get(i), String.valueOf(player.getDuration()), R.drawable.arnya, R.raw.bird, player);
+                        addMusic_to_refer_noName(tempNames.get(i), tempSingers.get(i), finetuneDuration(player.getDuration()), R.drawable.arnya, R.raw.bird, player);
                         addItemToListView(tempNames.get(i));
 
 //                        player.start();
@@ -582,11 +657,13 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (flag == 0){
+                    Reference.heartModeFinish = 1;
                     return buffer.toString();
                 }
 
                 lastSingers = newLastSingers;
                 lastNames = newLastNames;
+                Reference.heartModeFinish = 1;
 
 
                 return buffer.toString();

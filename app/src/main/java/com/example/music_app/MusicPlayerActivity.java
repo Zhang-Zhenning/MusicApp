@@ -1,6 +1,7 @@
 package com.example.music_app;
 
 import androidx.appcompat.app.AppCompatActivity;
+import com.example.music_app.marqueueText;
 
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -15,6 +16,7 @@ import java.sql.Ref;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.ArrayList;
+import java.util.regex.MatchResult;
 
 
 public class MusicPlayerActivity extends AppCompatActivity{
@@ -36,7 +38,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
         // music poster image initialization
         ImageView imageViewMain = findViewById(R.id.imageViewMusicPoster);
         imageViewMain.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
-        TextView title = findViewById(R.id.textViewTitle);
+        marqueueText title = findViewById(R.id.textViewTitle);
         title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
     }
 
@@ -124,7 +126,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
                 // reset picture
                 ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
                 imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
-                TextView title = findViewById(R.id.textViewTitle);
+                marqueueText title = findViewById(R.id.textViewTitle);
                 title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
                 SeekBar progressControlBar1 = (SeekBar) findViewById(R.id.seekBarProgress);
                 progressControlBar1.setMax(Reference.mpList.get(Reference.currentPlayMusic).getDuration());
@@ -160,7 +162,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
         // reset picture
         ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
         imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
-        TextView title = findViewById(R.id.textViewTitle);
+        marqueueText title = findViewById(R.id.textViewTitle);
         title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
         SeekBar progressControlBar1 = (SeekBar) findViewById(R.id.seekBarProgress);
         progressControlBar1.setMax(Reference.mpList.get(Reference.currentPlayMusic).getDuration());
