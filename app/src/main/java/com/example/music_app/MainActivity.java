@@ -4,6 +4,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.music_app.marqueueText;
 
+import android.animation.ObjectAnimator;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -67,7 +68,7 @@ class Reference{
     public static ArrayList<MediaPlayer> mpList = new ArrayList<MediaPlayer>();
     public static ArrayList<Integer> musicIdList = new ArrayList<Integer>();
     public static ArrayList<Integer> imageIdList = new ArrayList<Integer>();
-
+    public static ObjectAnimator anim;
 }
 
 

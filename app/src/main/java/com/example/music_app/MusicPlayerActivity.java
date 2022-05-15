@@ -3,13 +3,19 @@ package com.example.music_app;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.music_app.marqueueText;
 
+import android.animation.ObjectAnimator;
 import android.media.AudioManager;
+import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.widget.*;
 
 import java.sql.Ref;
@@ -22,6 +28,21 @@ import java.util.regex.MatchResult;
 public class MusicPlayerActivity extends AppCompatActivity{
 
     AudioManager cur_am;
+    RotateAnimation rotate;
+    int firstTimeRotate = 1;
+
+
+
+    public void rotate_Clockwise(View view) {
+        ObjectAnimator rotate = ObjectAnimator.ofFloat(view, "rotation", 360f, 0f);
+        rotate.setDuration(4500);
+        rotate.setRepeatCount(Animation.INFINITE);
+        rotate.start();
+
+
+    }
+
+
 
 
     // when we enter this page for the first time, need to initialize it firstly
@@ -37,7 +58,7 @@ public class MusicPlayerActivity extends AppCompatActivity{
 
         // music poster image initialization
         ImageView imageViewMain = findViewById(R.id.imageViewMusicPoster);
-        imageViewMain.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
+        imageViewMain.setImageResource(R.drawable.disk1);
         marqueueText title = findViewById(R.id.textViewTitle);
         title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
     }
@@ -50,6 +71,10 @@ public class MusicPlayerActivity extends AppCompatActivity{
 
         // -----------------------------------initialize music player UI------------------------------------
         initialize_musicPlayer();
+//        rotate_Clockwise((ImageView) findViewById(R.id.imageViewMusicPoster));
+
+
+
 
         // ---------------------------------------setup music player----------------------------------------
         // define two seekbars
@@ -124,8 +149,8 @@ public class MusicPlayerActivity extends AppCompatActivity{
                 Reference.currentPlayMusic = (Reference.currentPlayMusic + 1) % Reference.musicNum;
 
                 // reset picture
-                ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
-                imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
+//                ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
+//                imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
                 marqueueText title = findViewById(R.id.textViewTitle);
                 title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
                 SeekBar progressControlBar1 = (SeekBar) findViewById(R.id.seekBarProgress);
@@ -160,8 +185,8 @@ public class MusicPlayerActivity extends AppCompatActivity{
         }
 
         // reset picture
-        ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
-        imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
+//        ImageView imageViewMain1 = findViewById(R.id.imageViewMusicPoster);
+//        imageViewMain1.setImageResource(Reference.imageIdList.get(Reference.currentPlayMusic));
         marqueueText title = findViewById(R.id.textViewTitle);
         title.setText(Reference.musicNameList.get(Reference.currentPlayMusic));
         SeekBar progressControlBar1 = (SeekBar) findViewById(R.id.seekBarProgress);
@@ -186,13 +211,30 @@ public class MusicPlayerActivity extends AppCompatActivity{
     }
 
 
-    public void click_PlayStop(View view){
+    public void click_PlayStop(View view) throws InterruptedException {
         if(Reference.stopOrPlay == 1){
             Reference.stopOrPlay = 0;
             ImageView a = (ImageView) view;
             a.setImageResource(R.drawable.stop);
             Log.i("Info","in first if");
             Reference.mpList.get(Reference.currentPlayMusic).start();
+
+            if(firstTimeRotate == 1){
+                firstTimeRotate = 0;
+                ObjectAnimator aanim = ObjectAnimator.ofFloat((ImageView)findViewById(R.id.imageViewMusicPoster), View.ROTATION, 0f, 360f)
+                        .setDuration(5000);
+                aanim.setRepeatCount(Animation.INFINITE);
+                aanim.setInterpolator(new LinearInterpolator());
+                Reference.anim = aanim;
+
+                aanim.start();
+            }
+            else {
+                if (Reference.anim.isPaused()) {
+                    Reference.anim.resume();
+                }
+            }
+
 
         }
         else if(Reference.stopOrPlay == 0){
@@ -201,6 +243,11 @@ public class MusicPlayerActivity extends AppCompatActivity{
             a.setImageResource(R.drawable.play);
             Log.i("Info","in second if");
             Reference.mpList.get(Reference.currentPlayMusic).pause();
+
+            if (!Reference.anim.isPaused()) {
+                Reference.anim.pause();
+            }
+
         }
 
     }
