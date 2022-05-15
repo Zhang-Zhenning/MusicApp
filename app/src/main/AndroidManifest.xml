@@ -15,7 +15,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Music_App">
         <activity
+            android:name=".InitialPage"
+            android:exported="true"
+            android:launchMode="singleInstance">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".MainActivity"
+            android:parentActivityName=".InitialPage"
             android:exported="true"
             android:launchMode="singleInstance">
             <intent-filter>
